@@ -1,0 +1,16 @@
+[package]
+name = "woodpecker_buttons"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.14.0"
+woodpecker_ui = { git = "ssh://github.com/StarArawn/woodpecker_ui", rev = "5a98c1b" }
+bevy_vello = "0.5"
+bevy_mod_picking = "0.20"
+interpolation = "0.2"
+
+
+[patch.crates-io]
+bevy_mod_picking = { git = "https://github.com/StarArawn/bevy_mod_picking", branch = "main" }
+bevy_eventlistener = { git = "https://github.com/StarArawn/bevy_eventlistener", branch = "main" }
