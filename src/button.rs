@@ -6,11 +6,12 @@ use bevy::{color::palettes::tailwind::*, prelude::*};
 use woodpecker_ui::prelude::*;
 
 pub fn main_menu_interaction(
-    mut interactions: Query<(Entity, &PickingInteraction, &mut WoodpeckerStyle)>,
+    mut interactions: Query<(Entity, &PickingInteraction)>,
     children: Query<&Children>,
+    mut colors: Query<&mut WoodpeckerStyle, With<UpdateBgColor>>,
     transitions: Query<&TransitionTimer>,
 ) {
-    for (entity, interaction, mut style) in &mut interactions {
+    for (entity, interaction) in &mut interactions {
         let all_timers_finished = children
             .iter_descendants(entity)
             .filter_map(|entity| transitions.get(entity).ok())
@@ -28,11 +29,23 @@ pub fn main_menu_interaction(
             PickingInteraction::Hovered => RED_400.into(),
             PickingInteraction::None => Color::WHITE,
         };
-        let mut new_style = *style;
-        new_style.background_color = interaction_color;
-        *style = new_style;
+
+        let color_updates = children
+            .iter_descendants(entity)
+            .filter(|entity| colors.get(*entity).is_ok())
+            .collect::<Vec<Entity>>();
+        for entity in color_updates {
+            let mut style = colors.get_mut(entity).unwrap();
+            let mut new_style = *style;
+            new_style.background_color = interaction_color;
+            info!("deref");
+            *style = new_style;
+        }
     }
 }
+
+#[derive(Component, Clone)]
+pub struct UpdateBgColor;
 
 #[derive(Component, Widget, Clone)]
 #[widget_systems(update, render)]
@@ -83,6 +96,7 @@ fn render(
 
     inner_container_children.add::<Element>((
         Name::new("Card"),
+        UpdateBgColor,
         ElementBundle::default(),
         WidgetRender::Quad,
         TransitionTimer {
@@ -141,7 +155,7 @@ fn render(
     ));
 
     inner_container_children.add::<Element>((
-        Name::new("Secondary Reveal"),
+        Name::new("Primary Reveal"),
         ElementBundle::default(),
         WidgetRender::Quad,
         TransitionTimer {
@@ -188,7 +202,7 @@ fn render(
     ));
 
     inner_container_children.add::<Element>((
-        Name::new("Primary Reveal"),
+        Name::new("Secondary Reveal"),
         ElementBundle::default(),
         WidgetRender::Quad,
         TransitionTimer {
@@ -233,6 +247,7 @@ fn render(
     let mut container_children = WidgetChildren::default();
 
     container_children.add::<Element>((
+        Name::new("Container"),
         ElementBundle {
             styles: WoodpeckerStyle {
                 background_color: BLUE_400.into(),
